@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Hunt narrator grammar picker. Spec §Narrator grammar.
+# Quest narrator grammar picker. Spec §Narrator grammar.
 # Flourish precedence: Limit Break > No Continues > MP conserved > All Drops.
 # (Summoned <soul> not in MVP — requires soul rarity table.)
 set -euo pipefail
@@ -13,7 +13,7 @@ pick_verb() {
   if [[ -n "${SENTINEL_NEON_URL:-}" ]]; then
     mapfile -t used < <(psql "$SENTINEL_NEON_URL" -At -c \
       "SELECT split_part(headline,' ',2)
-       FROM hunt_session
+       FROM quest_session
        WHERE party_name = '${party//\'/\'\'}'
          AND headline IS NOT NULL
        ORDER BY ended_at DESC NULLS LAST LIMIT 3" 2>/dev/null || true)
@@ -40,22 +40,22 @@ pick_flourish() {
 case "${1:-}" in
   headline)
     party="${2:?party}"
-    quarry="${3:?quarry}"
+    objective="${3:?objective}"
     crit="${4:?crit}"; retries="${5:?retries}"
     dur="${6:?duration}"; median="${7:?median}"
-    rare="${8:?rare}"; drops="${9:?drops}"
+    rare="${8:?rare}"; loot="${9:?loot}"
     verb="$(pick_verb "$party")"
-    fl="$(pick_flourish "$crit" "$retries" "$dur" "$median" "$rare" "$drops")"
+    fl="$(pick_flourish "$crit" "$retries" "$dur" "$median" "$rare" "$loot")"
     if [[ -n "$fl" ]]; then
-      printf "%s %s %s — %s\n" "$party" "$verb" "$quarry" "$fl"
+      printf "%s %s %s — %s\n" "$party" "$verb" "$objective" "$fl"
     else
-      printf "%s %s %s\n" "$party" "$verb" "$quarry"
+      printf "%s %s %s\n" "$party" "$verb" "$objective"
     fi
     ;;
   subtitle)
-    lv="${2:?level}"; dur="${3:?duration_min}"; drops="${4:?drops}"
+    lv="${2:?level}"; dur="${3:?duration_min}"; loot="${4:?loot}"
     xp="${5:?xp}"; hash="${6:?hash}"
-    printf "Lv%s · %sm · %sd · +%sxp · %s\n" "$lv" "$dur" "$drops" "$xp" "$hash"
+    printf "Lv%s · %sm · %sd · +%sxp · %s\n" "$lv" "$dur" "$loot" "$xp" "$hash"
     ;;
   *) echo "usage: $0 {headline|subtitle} ..." >&2; exit 2 ;;
 esac
