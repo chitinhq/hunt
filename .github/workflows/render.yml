@@ -1,0 +1,40 @@
+name: render
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"   # every 15 min; Hunt retention is minutes, not seconds
+
+permissions:
+  contents: write
+
+concurrency:
+  group: render
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install psql
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: render cards
+        env:
+          SENTINEL_NEON_URL: ${{ secrets.SENTINEL_NEON_URL }}
+          OUT_DIR: public
+        run: |
+          bash scripts/render.sh
+          # Keep the snapshot tests' template next to rendered output so preview works.
+          cp templates/card.html.mustache public/ || true
+
+      - name: deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
+          force_orphan: false
+          keep_files: true       # don't delete older cards
+          commit_message: "render: ${{ github.event_name }} ${{ github.run_id }}"
