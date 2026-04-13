@@ -39,4 +39,11 @@ grep -q 'url=sp-won.html' /tmp/hunt-out/k/latest.html || { echo "latest wrong ta
 grep -q 'SHADOW PACT' /tmp/hunt-out/k/sp-won.html
 grep -q 'party rested' /tmp/hunt-out/k/sp-grey.html
 
+# Soulforge↔Hunt boundary 2a: soul names MUST NOT leak into public HTML party strip.
+# Fixture seeds party with soul="sun-tzu"; rendered HTML must show class "Time Mage" instead.
+if grep -q 'sun-tzu' /tmp/hunt-out/k/sp-won.html; then
+  echo "BOUNDARY VIOLATION: soul name 'sun-tzu' rendered in public HTML"; exit 1
+fi
+grep -q 'Time Mage' /tmp/hunt-out/k/sp-won.html || { echo "class 'Time Mage' missing from party strip"; exit 1; }
+
 echo "OK"
