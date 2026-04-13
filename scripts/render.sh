@@ -33,7 +33,21 @@ while IFS='|' read -r sid pname enc hl xp rarity date dur_sec party_json drops_j
   dur_min=$(( dur_sec / 60 ))
   level=$(( xp / 500 + 1 ))
   drop_count=$(echo "$drops_json" | python3 -c 'import json,sys;print(len(json.loads(sys.stdin.read() or "[]")))')
-  party_list=$(echo "$party_json" | python3 -c 'import json,sys;[print(s.get("soul",""),end="  ") for s in json.loads(sys.stdin.read() or "[]")]')
+  # Soulforge↔Hunt boundary 2a: render class only, never soul name.
+  # See workspace:docs/strategy/soulforge-hunt-boundary-2026-04-13.md
+  party_list=$(echo "$party_json" | python3 -c '
+import json,sys,os
+m={}
+with open(os.path.join(os.path.dirname(sys.argv[1]),"..","data","soul-to-class.tsv")) as f:
+    next(f)
+    for line in f:
+        k,v=line.rstrip("\n").split("\t"); m[k]=v
+out=[]
+for s in json.loads(sys.stdin.read() or "[]"):
+    cls=s.get("class") or m.get(s.get("soul",""),"")
+    if cls: out.append(cls)
+print("  ".join(out))
+' "$0")
   # Short hash for subtitle
   hash=$(printf '%s' "$sid" | shasum | cut -c1-4)
   is_grey="false"; (( xp == 0 )) && is_grey="true"
