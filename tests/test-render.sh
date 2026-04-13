@@ -6,7 +6,7 @@ render() {
   # shellcheck disable=SC1091
   export MO_ALLOW_FUNCTION_ARGUMENTS=1
   # Feed fixture as env via jq → shell vars.
-  while IFS='=' read -r k v; do export "HUNT_$k"="$v"; done < <(
+  while IFS='=' read -r k v; do export "QUEST_$k"="$v"; done < <(
     jq -r 'to_entries[] | "\(.key)=\(.value)"' "$fixture"
   )
   ./vendor/mo templates/card.html.mustache
@@ -27,7 +27,7 @@ for name in normal grey; do
   diff -u "$snap" "$rendered" || { echo "snapshot drift: $name"; exit 1; }
 done
 
-# Spot-check: normal output must include party + quarry + permalink.
+# Spot-check: normal output must include party + objective + permalink.
 grep -q "SHADOW PACT" /tmp/rendered-normal.html
 grep -q "chitin#93"   /tmp/rendered-normal.html
 grep -q "shadowpact-20260413-0510" /tmp/rendered-normal.html

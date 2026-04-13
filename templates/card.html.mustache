@@ -2,59 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>{{HUNT_headline}}</title>
-  <meta property="og:title" content="{{HUNT_headline}}">
-  <meta property="og:description" content="{{HUNT_subtitle}}">
+  <title>{{QUEST_headline}}</title>
+  <meta property="og:title" content="{{QUEST_headline}}">
+  <meta property="og:description" content="{{QUEST_subtitle}}">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://{{HUNT_permalink}}">
+  <meta property="og:url" content="https://{{QUEST_permalink}}">
   <meta name="twitter:card" content="summary">
   <style>
     body { font-family: ui-monospace, Menlo, Consolas, monospace;
            background: #0e1116; color: #e6edf3; margin: 0;
            display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-    .card { border: 1px solid #30363d; padding: 24px 32px; max-width: 560px;
+    .quest-log { border: 1px solid #30363d; padding: 24px 32px; max-width: 560px;
             background: #161b22; box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
-    .header { color: #f0c040; font-weight: bold; letter-spacing: 0.08em; }
-    .party  { color: #8b949e; margin: 6px 0 20px; }
-    .quarry { text-align: center; font-size: 1.4em; margin: 16px 0; }
-    .rule   { color: #30363d; text-align: center; }
-    .narr   { margin: 18px 0; font-style: italic; color: #c9d1d9; }
-    .narr p { margin: 4px 0; }
-    .foot   { color: #8b949e; margin-top: 18px; font-size: 0.85em;
-              display: flex; justify-content: space-between; }
-    .drops  { color: #7ee787; }
-    .rarity { color: #f0c040; border: 1px solid #f0c040; padding: 2px 6px; margin-left: 10px; font-size: 0.85em; }
-    .grey .header, .grey .quarry { color: #6e7681; }
-    .grey .drops { color: #8b949e; }
+    .header    { color: #f0c040; font-weight: bold; letter-spacing: 0.08em; }
+    .party     { color: #8b949e; margin: 6px 0 20px; }
+    .objective { text-align: center; font-size: 1.4em; margin: 16px 0; }
+    .rule      { color: #30363d; text-align: center; }
+    .narr      { margin: 18px 0; font-style: italic; color: #c9d1d9; }
+    .narr p    { margin: 4px 0; }
+    .foot      { color: #8b949e; margin-top: 18px; font-size: 0.85em;
+                 display: flex; justify-content: space-between; }
+    .loot      { color: #7ee787; }
+    .rarity    { color: #f0c040; border: 1px solid #f0c040; padding: 2px 6px; margin-left: 10px; font-size: 0.85em; }
+    .grey .header, .grey .objective { color: #6e7681; }
+    .grey .loot { color: #8b949e; }
   </style>
 </head>
 <body>
-  <div class="card{{#HUNT_is_grey}} grey{{/HUNT_is_grey}}">
+  <div class="quest-log{{#QUEST_is_grey}} grey{{/QUEST_is_grey}}">
     <div class="header">
-      {{HUNT_party_name}} · Lv {{HUNT_level}} · {{HUNT_encounter}}
+      {{QUEST_party_name}} · Lv {{QUEST_level}} · {{QUEST_encounter}}
     </div>
-    <div class="party">{{HUNT_party_list}}</div>
+    <div class="party">{{QUEST_party_list}}</div>
 
-    <div class="quarry">
-      {{^HUNT_is_grey}}{{HUNT_quarry}} — {{HUNT_status_label}}{{/HUNT_is_grey}}
-      {{#HUNT_is_grey}}(party rested — 0 drops){{/HUNT_is_grey}}
+    <div class="objective">
+      {{^QUEST_is_grey}}{{QUEST_objective}} — {{QUEST_status_label}}{{/QUEST_is_grey}}
+      {{#QUEST_is_grey}}(party rested — 0 loot){{/QUEST_is_grey}}
     </div>
     <div class="rule">─────────────────────</div>
 
     <div class="narr">
-      <p>{{HUNT_narrative_line1}}</p>
-      {{#HUNT_narrative_line2}}<p>{{HUNT_narrative_line2}}</p>{{/HUNT_narrative_line2}}
-      {{#HUNT_narrative_line3}}<p>{{HUNT_narrative_line3}}</p>{{/HUNT_narrative_line3}}
+      <p>{{QUEST_narrative_line1}}</p>
+      {{#QUEST_narrative_line2}}<p>{{QUEST_narrative_line2}}</p>{{/QUEST_narrative_line2}}
+      {{#QUEST_narrative_line3}}<p>{{QUEST_narrative_line3}}</p>{{/QUEST_narrative_line3}}
     </div>
 
     <div>
-      +{{HUNT_xp_awarded}} XP · <span class="drops">{{HUNT_drops_label}}</span>
-      {{#HUNT_rarity_label}}<span class="rarity">{{HUNT_rarity_label}}</span>{{/HUNT_rarity_label}}
+      +{{QUEST_xp_awarded}} XP · <span class="loot">{{QUEST_loot_label}}</span>
+      {{#QUEST_rarity_label}}<span class="rarity">{{QUEST_rarity_label}}</span>{{/QUEST_rarity_label}}
     </div>
 
     <div class="foot">
-      <span>{{HUNT_permalink}}</span>
-      <span>{{HUNT_date}}</span>
+      <span>{{QUEST_permalink}}</span>
+      <span>{{QUEST_date}}</span>
     </div>
   </div>
 </body>
