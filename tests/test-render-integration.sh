@@ -12,6 +12,8 @@ export SENTINEL_NEON_URL="postgres://postgres:test@127.0.0.1:5547/postgres"
 for _ in $(seq 1 30); do pg_isready -d "$SENTINEL_NEON_URL" -q && break; sleep 1; done
 
 psql -d "$SENTINEL_NEON_URL" -v ON_ERROR_STOP=1 -f "$WS_MIGRATION"
+WS_MIGRATION_005="../workspace/sentinel/migrations/005_quest_session_constraints.sql"
+[[ -f "$WS_MIGRATION_005" ]] && psql -d "$SENTINEL_NEON_URL" -v ON_ERROR_STOP=1 -f "$WS_MIGRATION_005"
 
 # Seed: one normal won row + one grey row.
 psql -d "$SENTINEL_NEON_URL" -v ON_ERROR_STOP=1 <<'SQL'
@@ -21,9 +23,9 @@ VALUES
   ('sp-won','2026-04-13T05:10:00Z','2026-04-13T05:24:00Z','SHADOW PACT','raid',
    '[{"soul":"sun-tzu"}]'::jsonb,
    '[{"kind":"pr","ref":"#111","url":"https://x/pr/111"}]'::jsonb,
-   '[]'::jsonb, 120, 'flawless', 'won'),
+   '[]'::jsonb, 120, 'epic', 'won'),
   ('sp-grey','2026-04-13T08:20:00Z','2026-04-13T08:28:00Z','SHADOW PACT','strike',
-   '[{"soul":"sun-tzu"}]'::jsonb, '[]'::jsonb, '[]'::jsonb, 0, NULL, 'won');
+   '[{"soul":"sun-tzu"}]'::jsonb, '[]'::jsonb, '[]'::jsonb, 0, NULL, 'grey');
 SQL
 
 mkdir -p /tmp/quest-out
