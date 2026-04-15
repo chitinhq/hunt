@@ -2,7 +2,7 @@ name: render
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *"   # every 15 min; Hunt retention is minutes, not seconds
+    - cron: "*/15 * * * *"   # every 15 min; Quest retention is minutes, not seconds
 
 permissions:
   contents: write

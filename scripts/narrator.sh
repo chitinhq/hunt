@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Quest narrator grammar picker. Spec §Narrator grammar.
-# Flourish precedence: Limit Break > No Continues > MP conserved > All Drops.
+# Flourish precedence: Limit Break > No Continues > MP conserved > All Loot.
 # (Summoned <soul> not in MVP — requires soul rarity table.)
 set -euo pipefail
 
@@ -29,11 +29,11 @@ pick_verb() {
 }
 
 pick_flourish() {
-  local crit="$1" retries="$2" dur="$3" median="$4" rare="$5" drops="$6"
+  local crit="$1" retries="$2" dur="$3" median="$4" rare="$5" loot_count="$6"
   if (( crit > 2 ));                     then echo "Limit Break";  return; fi
   if (( retries == 0 ));                 then echo "No Continues"; return; fi
   if (( dur < median ));                 then echo "MP conserved"; return; fi
-  if (( drops >= 3 ));                   then echo "All Drops";    return; fi
+  if (( loot_count >= 3 ));              then echo "All Loot";     return; fi
   echo ""
 }
 
