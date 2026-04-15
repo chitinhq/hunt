@@ -12,7 +12,7 @@ TMPL="$(dirname "$0")/../templates/card.html.mustache"
 NARR="$(dirname "$0")/narrator.sh"
 
 # Column list matches fixture env-var shape.
-SESSIONS=$(psql "$SENTINEL_NEON_URL" -At -F '|' -c "
+SESSIONS=$(psql "$SENTINEL_NEON_URL" -At -F $'\x1f' -c "
   SELECT session_id, party_name, encounter,
          COALESCE(headline,''),
          xp_awarded,
@@ -21,14 +21,16 @@ SESSIONS=$(psql "$SENTINEL_NEON_URL" -At -F '|' -c "
          COALESCE(extract(epoch FROM ended_at - started_at)::int, 0),
          (party::text),
          (loot::text),
-         status
+         status,
+         COALESCE(objective::text,'[]'),
+         COALESCE(narrative,'')
   FROM quest_session
   ORDER BY COALESCE(ended_at,started_at) DESC
 ")
 
 latest_nongrey=""
 
-while IFS='|' read -r sid pname enc hl xp rarity date dur_sec party_json loot_json status; do
+while IFS=$'\x1f' read -r sid pname enc hl xp rarity date dur_sec party_json loot_json status objective_json narrative; do
   [[ -z "$sid" ]] && continue
   dur_min=$(( dur_sec / 60 ))
   level=$(( xp / 500 + 1 ))
@@ -50,7 +52,30 @@ print("  ".join(out))
 ' "$0")
   # Short hash for subtitle
   hash=$(printf '%s' "$sid" | shasum | cut -c1-4)
-  is_grey="false"; (( xp == 0 )) && is_grey="true"
+  is_grey=""; [[ "$status" == "grey" ]] && is_grey="true"
+
+  # Parse objective[0].name (P0 #1)
+  objective_name=$(echo "$objective_json" | python3 -c 'import json,sys
+try:
+    d=json.loads(sys.stdin.read() or "[]")
+    print(d[0].get("name","") if d else "")
+except Exception:
+    print("")')
+
+  # Split narrative into up to 3 lines (P0 #2)
+  narr_line1=""; narr_line2=""; narr_line3=""
+  if [[ -n "$narrative" ]]; then
+    IFS=$'\n' read -r -d '' narr_line1 narr_line2 narr_line3 < <(python3 -c '
+import sys, re
+t=sys.argv[1].strip()
+# Split on newline first; if only one line, split on sentence boundary.
+lines=[l.strip() for l in t.split("\n") if l.strip()]
+if len(lines)<=1:
+    lines=[s.strip() for s in re.split(r"(?<=[.!?])\s+", t) if s.strip()]
+lines=(lines+["","",""])[:3]
+print("\n".join(lines), end="\0")
+' "$narrative") || true
+  fi
 
   # Derive loot_label
   if (( loot_count == 0 )); then
@@ -67,7 +92,7 @@ print("  ".join(out))
     if [[ "$is_grey" == "true" ]]; then
       hl="(party rested — 0 loot)"
     else
-      hl=$("$NARR" headline "$pname" "objective" 0 0 "$dur_sec" "$dur_sec" 0 "$loot_count")
+      hl=$("$NARR" headline "$pname" "${objective_name:-$enc}" 0 0 "$dur_sec" "$dur_sec" 0 "$loot_count")
     fi
   fi
 
@@ -81,11 +106,11 @@ print("  ".join(out))
   export QUEST_encounter="$enc"
   export QUEST_level="$level"
   export QUEST_party_list="$party_list"
-  export QUEST_objective=""   # objective column extension (Phase 2); headline carries it for MVP
+  export QUEST_objective="$objective_name"
   export QUEST_status_label="$([[ "$status" == "won" ]] && echo "DOWNED" || echo "${status^^}")"
-  export QUEST_narrative_line1=""
-  export QUEST_narrative_line2=""
-  export QUEST_narrative_line3=""
+  export QUEST_narrative_line1="$narr_line1"
+  export QUEST_narrative_line2="$narr_line2"
+  export QUEST_narrative_line3="$narr_line3"
   export QUEST_xp_awarded="$xp"
   export QUEST_loot_label="$loot_label"
   export QUEST_rarity_label="$rarity_label"
@@ -95,8 +120,10 @@ print("  ".join(out))
   export QUEST_date="$date"
   export QUEST_is_grey="$is_grey"
 
-  # Empty narrative for MVP (moves carry it Phase 2); use headline fallback.
-  export QUEST_narrative_line1="$hl"
+  # Headline fallback if narrative empty
+  if [[ -z "$narr_line1" ]]; then
+    export QUEST_narrative_line1="$hl"
+  fi
 
   "$MO" "$TMPL" > "$OUT_DIR/q/$sid.html"
 
